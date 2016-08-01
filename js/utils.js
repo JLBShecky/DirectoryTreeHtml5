@@ -25,26 +25,57 @@ function InvalidArgumentException(message) {
   this.name = "InvalidArgumentException";
 }
 
+function readDirectory(startItem, callback) {
+  var files = [];
+  var activeDirectories = 0;
+  
+  var tmp = document.createElement('div');
 
-/*
- * Source: http://stackoverflow.com/questions/3590058/does-html5-allow-drag-drop-upload-of-folders-or-a-folder-tree
- */
-function traverseFileTree(item, path) {
-  path = path || "";
-  if (item.isFile) {
-    // Get file
-    item.file(function (file) {
-      console.log("File:", path + file.name);
-    });
-  } else if (item.isDirectory) {
-    // Get folder contents
-    var dirReader = item.createReader();
-    dirReader.readEntries(function (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        traverseFileTree(entries[i], path + item.name + "/");
-      }
-    }, function (err) {
-      console.log(err);
-    });
+  // Handle the start of a directory
+  tmp.addEventListener('StartDirectory', function StartDirectory(evt) {
+     activeDirectories++;
+  });
+
+  // Handle when we finish a directory
+  tmp.addEventListener('CompleteDirectory', function CompleteDirectory(evt) {
+     if(!--activeDirectories) {
+       callback(files);
+     }
+  });
+  
+  /*
+   * Source: http://stackoverflow.com/questions/3590058/does-html5-allow-drag-drop-upload-of-folders-or-a-folder-tree
+   */
+  function traverseFileTree(item, path) {
+    path = path || "";
+    if (item.isFile) {
+      // Get file
+      item.file(function (file) {
+        if (/\.xml|preview\.png$/i.test(file.name)) {
+          files.push({ "path": path + file.name, "handel": file })
+        }
+      });
+    } else if (item.isDirectory) {
+      tmp.dispatchEvent(new Event('StartDirectory'));
+      
+      // Get folder contents
+      var dirReader = item.createReader();
+      dirReader.readEntries(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          traverseFileTree(entries[i], path + item.name + "/");
+        }
+        
+        tmp.dispatchEvent(new Event('CompleteDirectory'));
+      }, function (err) {
+        console.log(err);
+      });
+    }
   }
+  
+  // Initialize
+  traverseFileTree(startItem);
 }
+
+//
+var evt_StartDirectory = new Event('StartDirectory');
+var evt_CompleteDirectory = new Event('CompleteDirectory');
