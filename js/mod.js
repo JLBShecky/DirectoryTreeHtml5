@@ -5,7 +5,10 @@ function Mod(files, path, callback) {
   var webSite = "";
   var modAuthors = "";
 
-  var filesCnt = 0;
+  var filesCnt = files.length;
+  var filesData = {};
+  var modData = {};
+  var languages = {};
 
   var previewImage = new Image();
   previewImage.onload = function () {
@@ -40,7 +43,6 @@ function Mod(files, path, callback) {
 
   // Load the mod's info from about.xml
   if (about_xml = files.find(function (test) { return /about\/about\.xml$/i.test(test.path); })) {
-    filesCnt++;
     var aboutReader = new FileReader();
     aboutReader.onload = function (evt) {
       if ((tmp = x2js.xml_str2json(evt.target.result)) && tmp.ModMetaData && tmp.ModMetaData.name) {
@@ -65,14 +67,43 @@ function Mod(files, path, callback) {
 
   // Load the mod's Preview, if there is one.
   if (preview = files.find(function (test) { return /about\/preview\.png$/i.test(test.path); })) {
-    filesCnt++;
-
     var previewReader = new FileReader();
     previewReader.onload = function (evt) {
       previewImage.src = evt.target.result;
     }
     previewReader.readAsDataURL(preview.handel);
     // help
+  }
+
+  // Load the other files
+  for (var id = 0; id < files.length; id++) {
+    if (!/about\/about\.xml|about\/preview\.png$/i.test(files[id].path)) {
+      _LoadFile(files[id]);
+    }
+  }
+
+  function _LoadFile(theFile) {
+    var aboutReader = new FileReader();
+    aboutReader.onload = function (evt) {
+      if ((tmp = x2js.xml_str2json(evt.target.result))) {
+        if (/^languages\//i.test(theFile.path)) {
+          var lang = theFile.path.replace(/languages\/([^\/]+).*/i, "$1");
+
+          if (!languages[lang]) languages[lang] = {};
+
+          languages[lang][theFile.path.replace(/languages\/.*\/(.*)\.xml/i, "$1")] = tmp;
+        } else {
+          filesData[theFile.path] = tmp;
+
+          $.extend(modData, tmp);
+        }
+      } else {
+        throw new ModException("Umm... it seems we have a bad xml file. (" + path + ")");
+      }
+
+      evtHandler.dispatchEvent(new Event('ResourceLoaded'));
+    }
+    aboutReader.readAsText(theFile.handel);
   }
 
 
@@ -120,6 +151,21 @@ function Mod(files, path, callback) {
         modAuthors = name;
       }
     }
+  });
+
+  Object.defineProperty(this, "filesData", {
+    value: filesData,
+    writable: false
+  });
+
+  Object.defineProperty(this, "modData", {
+    value: modData,
+    writable: false
+  });
+
+  Object.defineProperty(this, "languages", {
+    value: languages,
+    writable: false
   });
 
   // Public functions

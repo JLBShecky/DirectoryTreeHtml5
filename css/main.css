@@ -5,11 +5,36 @@ body {
   padding:0;
 }
 
-#html5tree {
+#box_Tree {
   background:green;
   bottom:0;
+  box-sizing:border-box;
   height:100%;
+  left: 204px;
+  padding:5px 5px 5px 6px;
+  position:absolute;
+  right:0px;
+  top:0;
+}
+
+#box_Side {
+  background:blue;
+  bottom:0;
+  box-sizing:border-box;
+  height:100%;
+  left: 0px;
+  padding:5px 6px 5px 5px;
   position:absolute;
   top:0;
-  width:100%;
+  width:201px;
 }
+
+/*
+.css-treeview input:focus ~ ul {
+  display:block;
+}
+
+li:hover > input:not(:disabled) ~ ul {
+  display:block;
+}
+*/

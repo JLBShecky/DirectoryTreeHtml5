@@ -1,6 +1,6 @@
 $(function f() {
   //Allow dropping
-  var target = document.getElementById("html5tree");
+  var target = document.getElementById("box_Tree");
   target.addEventListener("dragover", function (evt) {
     evt.dataTransfer.dropEffect = "copy";
     evt.preventDefault();
@@ -24,7 +24,7 @@ $(function f() {
 
     function modLoadedCallback(modPath) {
       if (!--toLoadCnt) {
-        var container = $('#html5tree>ul');
+        var container = $('#box_Tree>ul');
 
         for (var id in mods) {
           container.append(mods[id].getTree());
@@ -50,7 +50,7 @@ $(function f() {
         matches.forEach(function (elm) {
           if (modDetector.test(elm.path)) {
             var dir = elm.path.replace(modDetector, "");
-            //$('#html5tree').append("<div>Mod At: " + dir + "</div>\n");
+            //$('#box_Tree').append("<div>Mod At: " + dir + "</div>\n");
             modDirs.push({
               "reg": new RegExp("^" + dir),
               "path": dir
@@ -79,6 +79,7 @@ $(function f() {
           mods[i] = new Mod(modDirFiles[i], i, modLoadedCallback);
         }
 
+        console.log('Hit', mods);
         globalMods = mods;
         globalModFiles = modDirFiles;
       }
