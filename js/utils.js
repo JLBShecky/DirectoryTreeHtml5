@@ -51,7 +51,7 @@ function readDirectory(startItem, callback) {
     if (item.isFile) {
       // Get file
       item.file(function (file) {
-        if (/\.xml|preview\.png$/i.test(file.name)) {
+        if (/\.xml|about\/preview\.png$/i.test(path + file.name)) {
           files.push({ "path": path + file.name, "handel": file })
         }
       });

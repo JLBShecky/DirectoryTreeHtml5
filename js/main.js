@@ -14,11 +14,23 @@ $(function f() {
   target.addEventListener("drop", function (evt) {
     evt.preventDefault();
     
-    $(this).empty();
+    $(this).empty().append($("<ul>"));
     var matches = [];
     var modDirs = [];
-    var modDetector = /\/about\/about.xml$/i;
+    var modDetector = /\/about\/about\.xml$/i;
     var modDirFiles = {};
+    var mods = {};
+    var toLoadCnt = 0;
+
+    function modLoadedCallback(modPath) {
+      if (!--toLoadCnt) {
+        var container = $('#html5tree>ul');
+
+        for (var id in mods) {
+          container.append(mods[id].getTree());
+        }
+      }
+    }
 
     function callback(data) {
       matches = matches.concat(data);
@@ -38,7 +50,7 @@ $(function f() {
         matches.forEach(function (elm) {
           if (modDetector.test(elm.path)) {
             var dir = elm.path.replace(modDetector, "");
-            $('#html5tree').append("<div>Mod At: " + dir + "</div>\n");
+            //$('#html5tree').append("<div>Mod At: " + dir + "</div>\n");
             modDirs.push({
               "reg": new RegExp("^" + dir),
               "path": dir
@@ -46,6 +58,9 @@ $(function f() {
 
             // Create the handler
             modDirFiles[dir] = [];
+
+            // Keep track of how many mods need loaded
+            toLoadCnt++;
           }
         });
 
@@ -60,7 +75,12 @@ $(function f() {
           }
         });
 
-        console.log(modDirFiles);
+        for (var i in modDirFiles) {
+          mods[i] = new Mod(modDirFiles[i], i, modLoadedCallback);
+        }
+
+        globalMods = mods;
+        globalModFiles = modDirFiles;
       }
     }
 
@@ -75,3 +95,8 @@ $(function f() {
     }
   });
 });
+
+var x2js = new X2JS();
+
+var globalModFiles;
+var globalMods;
